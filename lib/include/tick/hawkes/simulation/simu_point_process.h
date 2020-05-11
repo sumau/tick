@@ -79,6 +79,20 @@ class DLL_PUBLIC PP {
   // The time corresponding to the track records of the intensity
   VArrayDoublePtr itr_times;
 
+  // Current Intensity of each component
+  ArrayDoubleList1D contribution_current;
+
+  // The track records of the intensity contributions
+  VArrayDoublePtrList1D contribution_intensities;
+
+  // The node corresponding to the track records of the intensity where the timestamp
+  // occured, otherwise -1 if there was no timestamp
+  VArrayIntPtr contribution_nodes;
+
+    // The node corresponding to the track records of the intensity where the timestamp
+  // occured, otherwise -1 if there was no timestamp
+  VArrayDoublePtr contribution_timestamps;
+
   ////////////////////////////////////////////////////////////////////////////////
   //                            Constructors and destructors
   ////////////////////////////////////////////////////////////////////////////////
@@ -162,6 +176,15 @@ class DLL_PUBLIC PP {
     return false;
   }
 
+    /**
+   * @brief Updates the intensity contributions
+   * \param delay : Time to update
+   * \param intensity : The contribution_current matrix to update
+   */
+  virtual void update_contributions_(double delay, ArrayDoubleList1D &contribution_current) {
+    return;
+  }
+
   /**
    * @brief Record a jump in ith component
    */
@@ -180,6 +203,11 @@ class DLL_PUBLIC PP {
    */
   // TODO: Running with this is slower (30%) than the original library
   void itr_process();
+
+    /**
+   * @brief Process track record of intensity at current time
+   */
+  void contributions_process(int node);
 
  protected:
   /**
@@ -223,6 +251,32 @@ class DLL_PUBLIC PP {
       TICK_ERROR("``activate_itr()`` must be call before simulation");
 
     return itr_times;
+  }
+
+  /// @brief Returns intensity track contributions record array
+  inline VArrayDoublePtrList1D get_contribution_intensities() {
+    if (!itr_on())
+      TICK_ERROR("``activate_itr()`` must be call before simulation");
+
+    return contribution_intensities;
+  }
+
+  /// @brief Returns node where timestamp occured at which intensity has been recorded,
+  /// otherwise -1 if no timestamp was recorded at that time
+  inline VArrayIntPtr get_contribution_nodes() {
+    if (!itr_on())
+      TICK_ERROR("``activate_itr()`` must be call before simulation");
+
+    return contribution_nodes;
+  }
+
+  /// @brief Returns node where timestamp occured at which intensity has been recorded,
+  /// otherwise -1 if no timestamp was recorded at that time
+  inline VArrayDoublePtr get_contribution_timestamps() {
+    if (!itr_on())
+      TICK_ERROR("``activate_itr()`` must be call before simulation");
+
+    return contribution_timestamps;
   }
 
   /// @brief Returns if we are tracking intensity or not
@@ -273,6 +327,9 @@ class DLL_PUBLIC PP {
     ar(CEREAL_NVP(itr_time_step));
     ar(CEREAL_NVP(itr));
     ar(CEREAL_NVP(itr_times));
+    ar(CEREAL_NVP(contribution_intensities));
+    ar(CEREAL_NVP(contribution_nodes));
+    ar(CEREAL_NVP(contribution_timestamps));
 
     int rand_seed;
     ar(CEREAL_NVP(rand_seed));
@@ -296,6 +353,9 @@ class DLL_PUBLIC PP {
     ar(CEREAL_NVP(itr_time_step));
     ar(CEREAL_NVP(itr));
     ar(CEREAL_NVP(itr_times));
+    ar(CEREAL_NVP(contribution_intensities));
+    ar(CEREAL_NVP(contribution_nodes));
+    ar(CEREAL_NVP(contribution_timestamps));
 
     // Note that only the seed is part of the serialization.
     //

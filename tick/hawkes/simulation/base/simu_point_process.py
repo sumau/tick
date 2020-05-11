@@ -1,7 +1,7 @@
 # License: BSD 3 clause
 
 import warnings
-
+import numpy as np
 from tick.base.simulation import Simu
 
 
@@ -116,6 +116,27 @@ class SimuPointProcess(Simu):
             raise ValueError("Intensity has not been tracked, you should call "
                              "track_intensity before simulation")
         return self._pp.get_itr_times()
+
+    @property
+    def contribution_intensities(self):
+        if not self.is_intensity_tracked():
+            raise ValueError("Intensity has not been tracked, you should call "
+                             "track_intensity before simulation")
+        return np.array(self._pp.get_contribution_intensities())
+
+    @property
+    def contribution_nodes(self):
+        if not self.is_intensity_tracked():
+            raise ValueError("Intensity has not been tracked, you should call "
+                             "track_intensity before simulation")
+        return self._pp.get_contribution_nodes()
+
+    @property
+    def contribution_timestamps(self):
+        if not self.is_intensity_tracked():
+            raise ValueError("Intensity has not been tracked, you should call "
+                             "track_intensity before simulation")
+        return self._pp.get_contribution_timestamps()
 
     @property
     def intensity_track_step(self):

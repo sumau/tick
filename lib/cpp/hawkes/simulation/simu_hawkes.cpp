@@ -53,6 +53,20 @@ bool Hawkes::update_time_shift_(double delay, ArrayDouble &intensity,
   return flag_negative_intensity1;
 }
 
+void Hawkes::update_contributions_(double delay, ArrayDoubleList1D &contribution_current) {
+  // We loop on the contributions
+  for (unsigned int i = 0; i < n_nodes; i++) {
+    contribution_current[i][0] = get_baseline(i, get_time());
+
+    for (unsigned int j = 0; j < n_nodes; j++) {
+        HawkesKernelPtr &k = kernels[i * n_nodes + j];
+        if (k->get_support() == 0) continue;
+        contribution_current[i][j+1] =
+          k->get_convolution(get_time() + delay, *timestamps[j], 0);
+    }
+  }
+}
+
 void Hawkes::reset() {
   for (unsigned int i = 0; i < n_nodes; i++) {
     for (unsigned int j = 0; j < n_nodes; j++) {

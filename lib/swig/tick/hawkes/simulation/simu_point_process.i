@@ -26,6 +26,9 @@ class PP {
   ulong get_n_total_jumps();
   VArrayDoublePtrList1D get_itr();
   VArrayDoublePtr get_itr_times();
+  VArrayDoublePtrList1D get_contribution_intensities();
+  VArrayIntPtr get_contribution_nodes();
+  VArrayDoublePtr get_contribution_timestamps();
   double get_itr_step();
 
   void reseed_random_generator(int seed);

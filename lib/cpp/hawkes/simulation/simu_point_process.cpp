@@ -70,6 +70,18 @@ void PP::activate_itr(double dt) {
   itr.resize(n_nodes);
   for (unsigned int i = 0; i < n_nodes; i++) itr[i] = VArrayDouble::new_ptr();
   itr_times = VArrayDouble::new_ptr();
+
+  contribution_nodes = VArrayInt::new_ptr();
+  contribution_timestamps = VArrayDouble::new_ptr();
+
+  contribution_current = ArrayDoubleList1D(n_nodes);
+  for (unsigned int i = 0; i < n_nodes; i++) {
+    contribution_current[i] = ArrayDouble(n_nodes+1);
+    contribution_current[i].init_to_zero();
+  }
+
+  contribution_intensities.resize(n_nodes+1);
+  for (unsigned int i = 0; i < n_nodes+1; i++) contribution_intensities[i] = VArrayDouble::new_ptr();
 }
 
 void PP::reseed_random_generator(int seed) { rand.reseed(seed); }
@@ -81,12 +93,22 @@ void PP::itr_process() {
   itr_times->append1(time);
 }
 
+void PP::contributions_process(int node) {
+  if (!itr_on()) return;
+
+  contribution_nodes->append1(node);
+  contribution_timestamps->append1(time);
+  for (unsigned int i = 0; i < n_nodes+1; i++) {
+      contribution_intensities[i]->append1(contribution_current[node][i]);
+  }
+}
+
 void PP::update_time_shift(double delay, bool flag_compute_intensity_bound,
                            bool flag_itr) {
   flag_negative_intensity = update_time_shift_(
       delay, intensity,
       (flag_compute_intensity_bound ? &total_intensity_bound : nullptr));
-
+  if (itr_on()) update_contributions_(delay, contribution_current);
   time += delay;
 
   if (flag_compute_intensity_bound &&
@@ -160,6 +182,9 @@ void PP::simulate(double end_time, ulong n_points) {
       if (flag_negative_intensity && !threshold_negative_intensity) break;
       continue;
     }
+
+    // We record the intensity at the time of the jump
+    if (itr_on()) contributions_process(i);
 
     // Now we are ready to jump if needed
     update_jump(i);

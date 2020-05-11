@@ -144,6 +144,13 @@ class DLL_PUBLIC Hawkes : public PP {
                                   double *total_intensity_bound);
 
   /**
+   * @brief Updates the intensity contributions matrix
+   * \param delay : Time to update
+   * \param intensity : The contribution_current matrix to update
+   */
+  virtual void update_contributions_(double delay, ArrayDoubleList1D &contribution_current);
+
+  /**
    * @brief Get future baseline maximum reachable value for a specific dimension
    * at a given time \param i : the dimension \param t : considered time
    */
